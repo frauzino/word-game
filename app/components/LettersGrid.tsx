@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import LetterButton from './LetterButton'
 
-interface LetterButtonProps {
-  randomLetters: string[]
-  selectedLetter: string
-  onLetterClick: (letter: string) => void
+interface Letter {
+  id:number
+  value:string
+  isSelected?: boolean
 }
 
-const LettersGrid: React.FC<LetterButtonProps> = ({ randomLetters, selectedLetter, onLetterClick }) => {
+interface LetterButtonProps {
+  randomLetters: Letter[]
+  onLetterClick: (id: number) => void
+}
+
+const LettersGrid: React.FC<LetterButtonProps> = ({ randomLetters, onLetterClick }) => {
   if (!randomLetters || randomLetters.length === 0) {
     return <div>Loading...</div>
   }
@@ -17,9 +22,9 @@ const LettersGrid: React.FC<LetterButtonProps> = ({ randomLetters, selectedLette
      {randomLetters.map((letter, index) => (
         <LetterButton
           key={index}
-          letter={letter}
-          isSelected={selectedLetter === letter}
-          onClick={() => onLetterClick(letter)}
+          letter={letter.value}
+          onClick={() => onLetterClick(letter.id)}
+          isSelected={letter.isSelected || false}
         />
      ))}
     </div>
