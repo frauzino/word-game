@@ -1,8 +1,11 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import LetterSpace from './LetterSpace'
 import LettersGrid from './LettersGrid'
 import WordBox from './WordBox'
+import { generateGridLetters } from '../functions/GenerateGridLetters'
+import Button from './Button'
+import Counter from './Counter'
+import GameMessage from './GameMessage'
 
 interface Letter {
   id: number
@@ -10,20 +13,69 @@ interface Letter {
   isSelected?: boolean
 }
 
-const LettersGame = () => {
-  const letters: string[] = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
-  const [randomLetters, setRandomLetters] = useState<Letter[]>([])
-  const [selectedLetters, setSelectedLetters] = useState<(number | null)[]>([null, null, null])
+interface LettersGameProps {
+  possibleWords: string[]
+}
+
+const LettersGame: React.FC<LettersGameProps> = ({possibleWords}) => {
+  const [gridLetters, setGridLetters] = useState<Letter[]>([])
+  const [selectedLetters, setSelectedLetters] = useState<(number | null)[]>(Array(9).fill(null))
+  const [selectedWord, setSelectedWord] = useState<string>('')
+  const [winCount, setWinCount] = useState<number>(0)
+  const [flashEffect, setFlashEffect] = useState<boolean>(false)
+  const [message, setMessage] = useState<string>('')
+
+  const resetGame = () => {
+    const { longestWord, validGridLetters } = generateGridLetters(possibleWords)
+    setSelectedWord(longestWord)
+    setGridLetters(validGridLetters)
+    setSelectedLetters(Array(9).fill(null))
+    flash('Rerolled!')
+  }
+
+  const clearInput = () => {
+    setSelectedLetters(Array(9).fill(null))
+  }
 
   useEffect(() => {
-    const generateRandomLetters = () => {
-      return Array.from({ length: 9 }).map((_, index) => {
-        const randomIndex = Math.floor(Math.random() * letters.length)
-        return { id: index, value: letters[randomIndex] }
-      })
+    resetGame()
+  }, [possibleWords])
+
+  useEffect(() => {
+    const { longestWord, validGridLetters } = generateGridLetters(possibleWords)
+    setSelectedWord(longestWord)
+    setGridLetters(validGridLetters)
+  }, [possibleWords])
+
+  const flash = (message: string) => {
+    setFlashEffect(true)
+    setMessage(message)
+    setTimeout(() => {
+      setFlashEffect(false)
+      setMessage('')
+    }, 1000);
+  }
+
+  const checkWord = (word: string) => {
+    if (selectedWord === word || (selectedWord.length === word.length && possibleWords.includes(word))) {
+      setWinCount(prevCount => prevCount + 1)
+      flash('Correct!')
+      setTimeout(() => {
+        resetGame()
+      }, 1500);
+    } else {
+      setSelectedLetters(Array(9).fill(null))
+      setWinCount(0)
+      flash('Incorrect!')
     }
-    setRandomLetters(generateRandomLetters())
-  }, [])
+  }
+
+  const handleSubmit = () => {
+    const word = selectedLetters.map(id =>
+      id !== null ? gridLetters.find(letter => letter?.id === id)?.value : null
+    ).filter(value => value !== undefined).join('')
+    checkWord(word)
+  }
 
   const handleLetterClick = (id: number) => {
     setSelectedLetters(prevLetters => {
@@ -44,19 +96,34 @@ const LettersGame = () => {
     })
   }
 
-  const updatedLetters = randomLetters.map(letter => ({
+  const handleReroll = () => {
+    resetGame()
+    setWinCount(0)
+
+  }
+
+  const validGridLetters = gridLetters.filter(letter => letter !== undefined)
+
+  const updatedLetters = validGridLetters.map(letter => ({
     ...letter,
     isSelected: selectedLetters.includes(letter.id)
   }))
 
   const selectedLetterValues = selectedLetters.map(id =>
-    id !== null ? randomLetters.find(letter => letter.id === id)?.value : null
+    id !== null ? gridLetters.find(letter => letter?.id === id)?.value : null
   ).filter(value => value !== undefined) as (string | null)[]
 
   return (
-    <div className='flex flex-col gap-36 justify-center items-center'>
-      <LettersGrid randomLetters={updatedLetters} onLetterClick={handleLetterClick}/>
-      <WordBox selectedLetters={selectedLetterValues}/>
+    <div className='flex flex-col gap-8 justify-center items-center relative'>
+      <LettersGrid gridLetters={updatedLetters} onLetterClick={handleLetterClick}/>
+      <div className='absolute -top-20 right-20'>
+        <Counter count={winCount} flashEffect={flashEffect}/>
+      </div>
+      <div className='absolute top-0 right-80'>
+        <Button buttonText='Reroll' buttonVariant='primary' onClick={handleReroll}/>
+      </div>
+      <WordBox selectedLetters={selectedLetterValues} wordSubmit={handleSubmit} clearInput={clearInput}/>
+      <GameMessage message={message}/>
     </div>
   )
 }

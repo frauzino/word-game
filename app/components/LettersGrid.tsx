@@ -8,18 +8,18 @@ interface Letter {
 }
 
 interface LetterButtonProps {
-  randomLetters: Letter[]
+  gridLetters: Letter[]
   onLetterClick: (id: number) => void
 }
 
-const LettersGrid: React.FC<LetterButtonProps> = ({ randomLetters, onLetterClick }) => {
-  if (!randomLetters || randomLetters.length === 0) {
+const LettersGrid: React.FC<LetterButtonProps> = ({ gridLetters, onLetterClick }) => {
+  if (!gridLetters || gridLetters.length === 0) {
     return <div>Loading...</div>
   }
 
   return (
     <div className='grid grid-cols-3 w-fit'>
-     {randomLetters.map((letter, index) => (
+     {gridLetters.map((letter, index) => (
         <LetterButton
           key={index}
           letter={letter.value}

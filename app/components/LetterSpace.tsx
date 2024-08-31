@@ -6,7 +6,7 @@ interface LetterSpaceProps {
 
 const LetterSpace: React.FC<LetterSpaceProps> = ({ selectedLetter }) => {
   return (
-    <div className='w-24 h-16 text-center text-6xl border-b-2 border-white'>
+    <div className={`w-24 h-16 text-center text-6xl border-b-2 border-white`}>
       {selectedLetter}
     </div>
   )
