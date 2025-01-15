@@ -30,7 +30,6 @@ const LettersGame: React.FC<LettersGameProps> = ({possibleWords}) => {
     setSelectedWord(longestWord)
     setGridLetters(validGridLetters)
     setSelectedLetters(Array(9).fill(null))
-    flash('Rerolled!')
   }
 
   const clearInput = () => {
@@ -53,7 +52,7 @@ const LettersGame: React.FC<LettersGameProps> = ({possibleWords}) => {
     setTimeout(() => {
       setFlashEffect(false)
       setMessage('')
-    }, 1000);
+    }, 380);
   }
 
   const checkWord = (word: string) => {
